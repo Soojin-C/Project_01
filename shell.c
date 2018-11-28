@@ -8,11 +8,20 @@
 #include <string.h>
 #include <unistd.h>
 
-
-char ** parse_args(char * line){
-  char ** argv = malloc(6 *sizeof(char *));
+char ** parse_sem(char * line){
+  char ** tmp_argv = malloc(6 *sizeof(char *));
   for(int i = 0; i < 6; i++){
-    argv[i] = strsep(&line, " ");
+    tmp_argv[i] = strsep(&line, ";");
+    printf("%s\n", tmp_argv[i] );
+  }
+  return tmp_argv;
+}
+
+char ** parse_args(char ** args){
+  char ** argv = malloc(sizeof(args));
+  for(int j = 0; j < sizeof(args); j++){
+    argv[j] = strsep(args, " ");
+    //printf("%s\n", argv[j]);
   }
   return argv;
 }
@@ -22,56 +31,42 @@ int main(int argc, char * argv[]){
 
   int f;
   char * input = malloc (sizeof(char*));
-  //printf("arg:%s, %d\n", argv[1], argc);
 
   if ( argc == 1){
 
-    printf("arg:%s, %d\n", argv[1], argc);
-    //char * input = malloc (sizeof(char*));
     printf("SHELL$ ");
     fgets(input, 100, stdin);
-    //scanf("%s", input);
     if ((strlen(input) > 0) && (input[strlen (input) - 1] == '\n')){
       input[strlen (input) - 1] = '\0';
     }
-    printf("%s\n", input);
-
-    //execlp( "./a.out", "a.out" , (char *) NULL );
 
   }
 
   //if(argc > 1){
     int * status;
-    //wait(status);
-    char ** tmp_args = parse_args(input);
+    char ** tmp_args = parse_sem(input);
+    //printf("%s, %s\n", tmp_args[0], tmp_args[1] );
+    for(int i = 0; i < sizeof(tmp_args); i++){
+      //printf("%s\n", tmp_args[i]);
+      char ** final_args = malloc(sizeof(tmp_args));
+      final_args = parse_args(&tmp_args[i]);
+    //  printf("%s\n", final_args[0]);
+      f = fork();
 
-    printf("done parse %s, %s, %s \n", tmp_args[0], tmp_args[1], tmp_args[2]);
-    f = fork();
-    //printf("fork: %d; %d\n", f, getpid());
+      if(f == 0){ //child; running process
+        char * name_prg = final_args[0];
+        char path[] = "/bin/";
+        execvp(strcpy(path, name_prg), final_args);
+      }
+      else {
+        if() //if theres more to tmpargs then 
+        wait(status);
+        execlp( "./a.out", "a.out" ,(char *) NULL );
 
-    if(f == 0){ //child; running process
-      char * name_prg = tmp_args[0];
-      //printf("name of prog: %s", name_prg);
-      char path[] = "/bin/";
-      //printf("path: %s", path);
-      execvp(strcpy(path, name_prg), tmp_args);
-
+      }
     }
 
-    else {
 
-      wait(status);
-      /*
-      char * input = malloc (sizeof(char*));
-      //sleep (1);
-      printf("SHELL$ ");
-      scanf("%s", input);
-      printf("%s\n", input);
-      */
-
-      execlp( "./a.out", "a.out" ,(char *) NULL );
-
-    }
 
   //}
   return 0;
