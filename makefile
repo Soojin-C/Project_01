@@ -10,3 +10,4 @@ run:
 
 clean:
 	rm ./a.out
+	rm shell.o

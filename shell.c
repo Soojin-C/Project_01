@@ -21,54 +21,59 @@ char ** parse_args(char * line){
 int main(int argc, char * argv[]){
 
   int f;
+  char * input = malloc (sizeof(char*));
   //printf("arg:%s, %d\n", argv[1], argc);
 
   if ( argc == 1){
 
- printf("arg:%s, %d\n", argv[1], argc);
- char * input = malloc (sizeof(char*));
- printf("SHELL$ ");
- scanf("%s", input);
- printf("%s\n", input);
+    printf("arg:%s, %d\n", argv[1], argc);
+    //char * input = malloc (sizeof(char*));
+    printf("SHELL$ ");
+    fgets(input, 100, stdin);
+    //scanf("%s", input);
+    if ((strlen(input) > 0) && (input[strlen (input) - 1] == '\n')){
+      input[strlen (input) - 1] = '\0';
+    }
+    printf("%s\n", input);
 
- execlp( "./a.out", "a.out" , input ,(char *) NULL );
+    //execlp( "./a.out", "a.out" , (char *) NULL );
 
-   }
+  }
 
-  if(argc > 1){
+  //if(argc > 1){
     int * status;
     //wait(status);
-    char ** tmp_args = parse_args(argv[1]);
+    char ** tmp_args = parse_args(input);
 
-    printf("done parse\n");
+    printf("done parse %s, %s, %s \n", tmp_args[0], tmp_args[1], tmp_args[2]);
     f = fork();
     //printf("fork: %d; %d\n", f, getpid());
 
-  if(f == 0){ //child; running process
-    char * name_prg = tmp_args[0];
-    //printf("name of prog: %s", name_prg);
-    char path[] = "/bin/";
-    //printf("path: %s", path);
-    execvp(strcpy(path, name_prg), tmp_args);
-    //return 0;
+    if(f == 0){ //child; running process
+      char * name_prg = tmp_args[0];
+      //printf("name of prog: %s", name_prg);
+      char path[] = "/bin/";
+      //printf("path: %s", path);
+      execvp(strcpy(path, name_prg), tmp_args);
 
-  }
+    }
 
-  else {
+    else {
 
-    wait(status);
-    char * input = malloc (sizeof(char*));
-    //sleep (1);
-    printf("SHELL$ ");
-    scanf("%s", input);
-    printf("%s\n", input);
+      wait(status);
+      /*
+      char * input = malloc (sizeof(char*));
+      //sleep (1);
+      printf("SHELL$ ");
+      scanf("%s", input);
+      printf("%s\n", input);
+      */
 
-    execlp( "./a.out", "a.out" , input ,(char *) NULL );
+      execlp( "./a.out", "a.out" ,(char *) NULL );
 
-  }
+    }
 
-}
-
+  //}
   return 0;
 
 }
