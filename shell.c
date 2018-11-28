@@ -36,35 +36,38 @@ int main(int argc, char * argv[]){
    }
 
   if(argc > 1){
+    int * status;
+    //wait(status);
     char ** tmp_args = parse_args(argv[1]);
 
-    if (f){
-
-      int * status;
-
-      printf("done parse\n");
-      f = fork();
-      printf("fork: %d; %d\n", f, getpid());
-
-      wait(status);
-      char * input = malloc (sizeof(char*));
-      printf("SHELL$ ");
-      scanf("%s", input);
-      printf("%s\n", input);
-
-      execlp( "./a.out", "a.out" , input ,(char *) NULL );
-    }
+    printf("done parse\n");
+    f = fork();
+    //printf("fork: %d; %d\n", f, getpid());
 
   if(f == 0){ //child; running process
     char * name_prg = tmp_args[0];
-    printf("name of prog: %s", name_prg);
+    //printf("name of prog: %s", name_prg);
     char path[] = "/bin/";
-    printf("path: %s", path);
+    //printf("path: %s", path);
     execvp(strcpy(path, name_prg), tmp_args);
     //return 0;
 
   }
+
+  else {
+
+    wait(status);
+    char * input = malloc (sizeof(char*));
+    //sleep (1);
+    printf("SHELL$ ");
+    scanf("%s", input);
+    printf("%s\n", input);
+
+    execlp( "./a.out", "a.out" , input ,(char *) NULL );
+
   }
+
+}
 
   return 0;
 
