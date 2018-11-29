@@ -8,67 +8,90 @@
 #include <string.h>
 #include <unistd.h>
 
-char ** parse_sem(char * line){
-  char ** tmp_argv = malloc(6 *sizeof(char *));
-  for(int i = 0; i < 6; i++){
-    tmp_argv[i] = strsep(&line, ";");
-    printf("%s\n", tmp_argv[i] );
+//clean out line by getting rid of bad spaces
+char * spaces_clean(char * line){
+  int i = 0;
+  if(line[i] == ' '){
+    while(line[i] == ' '){
+      i++;
+    }
   }
+  return &line[i];
+}
+
+//counting number of arguments in a line given a delimiter
+int num_args(char * line, char * delim){
+  char * line2 = malloc(strlen(line) * sizeof(char*));
+  strcpy(line2, line);
+  int i = 0;
+  while(line2){
+    strsep(&line2, delim);
+    i++;
+  }
+  return i;
+}
+
+
+char ** parse_args(char * line, char * delim){
+  char ** tmp_argv = malloc(100 *sizeof(char *));
+  int i = 0;
+  while(line){
+    tmp_argv[i] = strsep(&line, delim);
+    tmp_argv[i] = spaces_clean(tmp_argv[i]);
+    i++;
+  }
+  tmp_argv[i] = NULL;
   return tmp_argv;
 }
 
-char ** parse_args(char ** args){
-  char ** argv = malloc(sizeof(args));
-  for(int j = 0; j < sizeof(args); j++){
-    argv[j] = strsep(args, " ");
-    //printf("%s\n", argv[j]);
+void fork_launch(char ** args){
+  int f;
+  int * status;
+
+  f = fork();
+
+  if(f == 0){ //child; running process
+    char * name_prg = args[0];
+    char path[] = "/bin/";
+    execvp(strcpy(path, name_prg), args);
   }
-  return argv;
+  else {
+    wait(status);
+  }
+
+}
+
+void run_shell(){
+  char * line;
+  int size;
+  char * input = malloc (sizeof(char*) * 100);
+  char ** args = malloc (sizeof(char*) * 100);
+  //1. Getting input line from stdin
+  printf("SHELL$ ");
+  line = fgets(input, 100, stdin);
+  if ((strlen(input) > 0) && (input[strlen (input) - 1] == '\n')){
+    input[strlen (input) - 1] = '\0';
+  }
+
+  //2. Parsing the input line
+  args = parse_args(input, ";");
+  size = num_args(input, ";");
+  
+  //3. Forking and Launching SHELL
+  for(int i = 0; i < size; i++){
+    char ** arg = parse_args(args[i], " ");
+    fork_launch(arg);
+  }
+
 }
 
 
-int main(int argc, char * argv[]){
+int main(){
 
-  int f;
-  char * input = malloc (sizeof(char*));
-
-  if ( argc == 1){
-
-    printf("SHELL$ ");
-    fgets(input, 100, stdin);
-    if ((strlen(input) > 0) && (input[strlen (input) - 1] == '\n')){
-      input[strlen (input) - 1] = '\0';
-    }
-
+  while(1){
+    run_shell(); //runnning shell
   }
 
-  //if(argc > 1){
-    int * status;
-    char ** tmp_args = parse_sem(input);
-    //printf("%s, %s\n", tmp_args[0], tmp_args[1] );
-    for(int i = 0; i < sizeof(tmp_args); i++){
-      //printf("%s\n", tmp_args[i]);
-      char ** final_args = malloc(sizeof(tmp_args));
-      final_args = parse_args(&tmp_args[i]);
-    //  printf("%s\n", final_args[0]);
-      f = fork();
-
-      if(f == 0){ //child; running process
-        char * name_prg = final_args[0];
-        char path[] = "/bin/";
-        execvp(strcpy(path, name_prg), final_args);
-      }
-      else {
-        if() //if theres more to tmpargs then 
-        wait(status);
-        execlp( "./a.out", "a.out" ,(char *) NULL );
-
-      }
-    }
-
-
-
-  //}
   return 0;
 
 }
