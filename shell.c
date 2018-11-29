@@ -1,29 +1,15 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <dirent.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/wait.h>
-#include <errno.h>
-#include <string.h>
-#include <unistd.h>
+#include "shell.h"
 
 //clean out line by getting rid of bad spaces
-char * spaces_clean(char * line){
-  int i = 0;
-  if(line[i] == ' '){
-    while(line[i] == ' '){
-      i++;
-    }
+void spaces_clean(char * line){
+  char* i = line;
+  char* j = &line[strlen(line)-1];
+  if(*i == ' '){
+    i++;
   }
-
-  int j = strlen(line) - 1;
-  if(line[j] == ' '){
-    while(line[j] == ' '){
-      j--;
-    }
+  if(*j == ' '){
+    j--;
   }
-  return line;
 }
 
 
@@ -32,7 +18,7 @@ char ** parse_args(char * line, char * delim){
   int i = 0;
   while(line){
     tmp_argv[i] = strsep(&line, delim);
-    tmp_argv[i] = spaces_clean(tmp_argv[i]);
+    spaces_clean(tmp_argv[i]);
     i++;
   }
   tmp_argv[i] = NULL;
@@ -72,13 +58,11 @@ void run_shell(){
 
   //2. Parsing the input line
   args = parse_args(line, ";");
-  printf("%s\n", args[0] );
   char *arg = *args;
 
   //3. Forking and Launching SHELL
   int i = 0;
   while(arg){
-    arg = spaces_clean(arg);
     char **cmds = parse_args(arg, " ");
     fork_launch(cmds);
     arg = args[++i];
