@@ -16,19 +16,14 @@ char * spaces_clean(char * line){
       i++;
     }
   }
-  return &line[i];
-}
 
-//counting number of arguments in a line given a delimiter
-int num_args(char * line, char * delim){
-  char * line2 = malloc(strlen(line) * sizeof(char*));
-  strcpy(line2, line);
-  int i = 0;
-  while(line2){
-    strsep(&line2, delim);
-    i++;
+  int j = strlen(line) - 1;
+  if(line[j] == ' '){
+    while(line[j] == ' '){
+      j--;
+    }
   }
-  return i;
+  return line;
 }
 
 
@@ -51,9 +46,10 @@ void fork_launch(char ** args){
   f = fork();
 
   if(f == 0){ //child; running process
-    char * name_prg = args[0];
-    char path[] = "/bin/";
-    execvp(strcpy(path, name_prg), args);
+    if(execvp(args[0], args) == -1){
+      printf("%s: Command not found try again. \n", args[0] );
+    }
+    exit(0);
   }
   else {
     wait(status);
@@ -66,6 +62,7 @@ void run_shell(){
   int size;
   char * input = malloc (sizeof(char*) * 100);
   char ** args = malloc (sizeof(char*) * 100);
+
   //1. Getting input line from stdin
   printf("SHELL$ ");
   line = fgets(input, 100, stdin);
@@ -74,14 +71,21 @@ void run_shell(){
   }
 
   //2. Parsing the input line
-  args = parse_args(input, ";");
-  size = num_args(input, ";");
-  
+  args = parse_args(line, ";");
+  printf("%s\n", args[0] );
+  char *arg = *args;
+
   //3. Forking and Launching SHELL
-  for(int i = 0; i < size; i++){
-    char ** arg = parse_args(args[i], " ");
-    fork_launch(arg);
+  int i = 0;
+  while(arg){
+    arg = spaces_clean(arg);
+    char **cmds = parse_args(arg, " ");
+    fork_launch(cmds);
+    arg = args[++i];
+    free(cmds);
+
   }
+  free(args);
 
 }
 
