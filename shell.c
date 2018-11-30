@@ -2,14 +2,15 @@
 
 //clean out line by getting rid of bad spaces
 void spaces_clean(char * line){
-  char* i = line;
-  char* j = &line[strlen(line)-1];
-  if(*i == ' '){
-    i++;
+  int count = 0;
+  for(int i = 0; line[i]; i++){
+    //if(count == 0 && line[count] == ' '){
+      if(count > 0 & count < strlen(line)-1 || line[i] != ' ' ){
+        line[count++] = line[i];
+      }
+    //}
   }
-  if(*j == ' '){
-    j--;
-  }
+  line[count] = '\0';
 }
 
 
@@ -75,6 +76,7 @@ void run_shell(){
 
 
 int main(){
+
 
   while(1){
     run_shell(); //runnning shell
