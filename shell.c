@@ -89,7 +89,7 @@ void run_shell(){
   //3. Forking and Launching SHELL
   int i = 0;
   while(arg){
-    if (strchr(arg, '>')) {
+    if (strchr(arg, '>')) { //redirection for >
       char * fnc = strsep(&arg, ">");
       char **cmds = parse_args(fnc, " ");
       while(arg[0] == ' '){
@@ -102,11 +102,14 @@ void run_shell(){
       arg = args[++i];
       free(cmds);
     }
-    else if(strchr(arg, '<')){
+    else if(strchr(arg, '<')){ //redirection for <
       char * fnc = strsep(&arg, "<");
       char **cmds = parse_args(fnc, " ");
       while(arg[0] == ' '){
         arg++;
+      }
+      if(strcmp(cmds[0], "")){
+        return;
       }
       int fd = open(arg, O_WRONLY | O_CREAT, 0666);
       int x = dup(0);
@@ -115,7 +118,7 @@ void run_shell(){
       arg = args[++i];
       free(cmds);
     }
-    else{
+    else{ //all else
       char **cmds = parse_args(arg, " ");
       fork_launch(cmds);
       arg = args[++i];
