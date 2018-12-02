@@ -7,8 +7,10 @@
 #include <errno.h>
 #include <string.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 void spaces_clean(char * line);
 char ** parse_args(char * line, char * delim);
 void fork_launch(char ** args);
+void fork_launch2(char ** args, int out, int in);
 void run_shell();
