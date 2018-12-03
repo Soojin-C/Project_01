@@ -4,10 +4,13 @@
 ## Features:  
 * Forks and executes inputted commands.  
 * Parses multiple commands with `;`
+* Redirection with `>` and `<`
 
 ## Attempted:  
 * Piping
-* Redirection    
 
 ## Bugs:  
 *  Limited to 100 arguments
+
+##Function Headers
+###shell.c

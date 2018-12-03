@@ -13,7 +13,14 @@ void spaces_clean(char * line){
   line[count] = '\0';
 }
 
+/*======== char ** parse_args() ==========
+	Inputs:  char * line, char * delim
+	Returns: Array of strings where each entry is a token
+	separated by delim
 
+	If line contains multiple tokens separated by delim, this
+	function will put each token into an array of strings
+	====================*/
 char ** parse_args(char * line, char * delim){
   char ** tmp_argv = malloc(100 *sizeof(char *));
   int i = 0;
@@ -71,10 +78,10 @@ void fork_launch2(char ** args, int out, int in){
     else {
       wait(status);
       if (out != 1){//sets stdout to 1
-	dup2(out, 1);
+	       dup2(out, 1);
       }
       if (in != 0){//sets stdin to 0
-	dup2(in, 0);
+	       dup2(in, 0);
       }
     }
   }
@@ -103,6 +110,7 @@ void run_shell(){
   int i = 0;
   while(arg){
     if (strchr(arg, '>')) { //redirection for >
+      printf("%s\n", arg );
       char * fnc = strsep(&arg, ">");
       char **cmds = parse_args(fnc, " ");
       while(arg[0] == ' '){
@@ -113,6 +121,8 @@ void run_shell(){
       dup2(fd, 1);
       fork_launch2(cmds, x, 0);
       arg = args[++i];
+      printf("%s\n", arg );
+      close(fd);
       free(cmds);
     }
     else if(strchr(arg, '<')){ //redirection for <
@@ -129,6 +139,7 @@ void run_shell(){
       dup2(fd, 0);
       fork_launch2(cmds, 1, x);
       arg = args[++i];
+      close(fd);
       free(cmds);
     }
     else if(strchr(arg, '|')){
