@@ -5,9 +5,9 @@ void spaces_clean(char * line){
   int count = 0;
   for(int i = 0; line[i]; i++){
     //if(count == 0 && line[count] == ' '){
-      if(count > 0 & count < strlen(line)-1 || line[i] != ' ' ){
-        line[count++] = line[i];
-      }
+    if(count > 0 & count < strlen(line)-1 || line[i] != ' ' ){
+      line[count++] = line[i];
+    }
     //}
   }
   line[count] = '\0';
@@ -17,6 +17,7 @@ void spaces_clean(char * line){
 char ** parse_args(char * line, char * delim){
   char ** tmp_argv = malloc(100 *sizeof(char *));
   int i = 0;
+  spaces_clean(line);
   while(line){
     tmp_argv[i] = strsep(&line, delim);
     spaces_clean(tmp_argv[i]);
@@ -30,16 +31,22 @@ void fork_launch(char ** args){
   int f;
   int * status;
 
-  f = fork();
-
-  if(f == 0){ //child; running process
-    if(execvp(args[0], args) == -1){
-      printf("%s: Command not found try again. \n", args[0] );
-    }
-    exit(0);
+  if(strcmp(args[0], "cd") == 0){
+    chdir(args[1]);
   }
-  else {
-    wait(status);
+
+  else{
+    f = fork();
+
+    if(f == 0){ //child; running process
+      if(execvp(args[0], args) == -1){
+        printf("%s: Command not found try again. \n", args[0] );
+      }
+      exit(0);
+    }
+    else {
+      wait(status);
+    }
   }
 
 }
@@ -48,21 +55,27 @@ void fork_launch2(char ** args, int out, int in){
   int f;
   int * status;
 
-  f = fork();
-
-  if(f == 0){ //child; running process
-    if(execvp(args[0], args) == -1){
-      printf("%s: Command not found try again. \n", args[0] );
-    }
-    exit(0);
+  if(strcmp(args[0], "cd") == 0){
+    chdir(args[1]);
   }
-  else {
-    wait(status);
-    if (out != 1){//sets stdout to 1
-      dup2(out, 1);
+
+  else{
+    f = fork();
+
+    if(f == 0){ //child; running process
+      if(execvp(args[0], args) == -1){
+	printf("%s: Command not found try again. \n", args[0] );
+      }
+      exit(0);
     }
-    if (in != 0){//sets stdin to 0
-      dup2(in, 0);
+    else {
+      wait(status);
+      if (out != 1){//sets stdout to 1
+	dup2(out, 1);
+      }
+      if (in != 0){//sets stdin to 0
+	dup2(in, 0);
+      }
     }
   }
 
@@ -117,6 +130,13 @@ void run_shell(){
       fork_launch2(cmds, 1, x);
       arg = args[++i];
       free(cmds);
+    }
+    else if(strchr(arg, '|')){
+      char * fnc = strsep(&arg, "|");
+      char ** cmds = parse_args(fnc, " ");
+      int pipefd[2];
+      pipe(pipefd);
+
     }
     else{ //all else
       char **cmds = parse_args(arg, " ");
