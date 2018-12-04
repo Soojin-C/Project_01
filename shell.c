@@ -130,6 +130,8 @@ void run_shell(){
   char ** args = malloc (sizeof(char*) * 100);
 
   //1. Getting input line from stdin
+  int * status;
+  wait(status);
   printf("SHELL$ ");
   line = fgets(input, 100, stdin);
   if ((strlen(input) > 0) && (input[strlen (input) - 1] == '\n')){
