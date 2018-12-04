@@ -175,10 +175,11 @@ void run_shell(){
       while(arg[0] == ' '){
         arg++;
       }
+      //printf("%s,%s,%s,%s\n", arg, cmds[0], cmds[1], cmds[2]);
       //if(strcmp(cmds[0], "")){
       //  return;
       //}
-      int fd = open(arg, O_WRONLY | O_CREAT, 0666);
+      int fd = open(arg, O_RDONLY | O_CREAT, 0666);
       int x = dup(0);
       dup2(fd, 0);
       fork_launch2(cmds, 1, x);
