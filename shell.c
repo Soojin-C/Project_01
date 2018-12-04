@@ -1,6 +1,12 @@
 #include "shell.h"
 
-//clean out line by getting rid of bad spaces
+/*======== void spaces_clean() ==========
+  Inputs: char * line
+  Returns: Nothing
+
+  Removes the spaces in the beginning and at the end of the inputted line.
+
+================================*/
 void spaces_clean(char * line){
   int count = 0;
   for(int i = 0; line[i]; i++){
@@ -17,6 +23,7 @@ void spaces_clean(char * line){
 	Inputs:  char * line, char * delim
 	Returns: Array of strings where each entry was previously separated by a delim
 
+	If line contains multiple arguments separated by delim, this function will put each argument into an array of strings
 
 	====================*/
 char ** parse_args(char * line, char * delim){
@@ -32,6 +39,16 @@ char ** parse_args(char * line, char * delim){
   return tmp_argv;
 }
 
+/*======== void fork_launch() ==========
+  Inputs: char ** args
+  Returns: NONE
+
+  Takes in an array of arguments and uses execvp to execute commands
+  If cd command is called: chdir() moves into another directory
+  If exit command is called: exits program
+  Other commands: forks process and execvp.
+
+================================================*/
 void fork_launch(char ** args){
   int f;
   int * status;
@@ -56,6 +73,13 @@ void fork_launch(char ** args){
 
 }
 
+/*======== void fork_launch2() ==========
+  Inputs: char ** args, int out, int in
+  Returns: NONE
+
+  Same function as fork_launch() but sets stdout back to 1 and stdin back to 0, used for redirection
+
+================================================*/
 void fork_launch2(char ** args, int out, int in){
   int f;
   int * status;
@@ -86,6 +110,19 @@ void fork_launch2(char ** args, int out, int in){
 
 }
 
+/*======== void run_shell() ==========
+Inputs: NONE
+Returns: NONE
+
+  Prints the SHELL$ heading
+  Gets the input line from stdin
+  Parses the input line on ;
+  4 cases are considered before forking:
+    * Redirection using >
+    * Redirection using <
+    * Piping using |
+    * All other commands
+===============================================*/
 void run_shell(){
   char * line;
   int size;
@@ -93,8 +130,6 @@ void run_shell(){
   char ** args = malloc (sizeof(char*) * 100);
 
   //1. Getting input line from stdin
-  int * status;
-  wait (status); 
   printf("SHELL$ ");
   line = fgets(input, 100, stdin);
   if ((strlen(input) > 0) && (input[strlen (input) - 1] == '\n')){
@@ -142,11 +177,27 @@ void run_shell(){
       close(fd);
       free(cmds);
     }
-    else if(strchr(arg, '|')){
+    else if(strchr(arg, '|')){ //simple piping
       char * fnc = strsep(&arg, "|");
       char ** cmds = parse_args(fnc, " ");
-      int pipefd[2];
-      pipe(pipefd);
+      while(arg[0] == ' '){
+        arg++;
+      }
+      //Writing result of first command
+      int in = dup(STDIN_FILENO);
+      int out = dup(STDOUT_FILENO);
+      int file1 = open("Pipin", O_WRONLY);
+      dup2(file1, 1);
+      fork_launch(parse_args(fnc, " "));
+
+      //Putting into second command
+      int file2 = open("Pipin", O_RDONLY); //getting info from first command output
+      dup2(file2, 0);
+      close(file1);
+      dup2(out, 1);//setting stdout back to 1
+      fork_launch(parse_args(arg, " "));
+      dup2(in, 0); //setting stdin back to 0
+      close(file2);
 
     }
     else{ //all else
@@ -161,14 +212,24 @@ void run_shell(){
 
 }
 
+//Will exits on keyboard interrupt signal
+static void sighandler(int signo){
+  if (signo == SIGINT){
+    exit(0);
+  }
+}
 
+/*========int main()========
+Inputs: NONE
+Outputs: 0
+
+While loop to keep shell running.
+=========================*/
 int main(){
-
 
   while(1){
     run_shell(); //runnning shell
   }
-
   return 0;
 
 }
