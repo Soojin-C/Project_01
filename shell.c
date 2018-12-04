@@ -15,11 +15,9 @@ void spaces_clean(char * line){
 
 /*======== char ** parse_args() ==========
 	Inputs:  char * line, char * delim
-	Returns: Array of strings where each entry is a token
-	separated by delim
+	Returns: Array of strings where each entry was previously separated by a delim
 
-	If line contains multiple tokens separated by delim, this
-	function will put each token into an array of strings
+	
 	====================*/
 char ** parse_args(char * line, char * delim){
   char ** tmp_argv = malloc(100 *sizeof(char *));
