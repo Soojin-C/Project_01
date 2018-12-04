@@ -11,6 +11,7 @@
 ## Bugs:  
 * Limited to 100 arguments
 * Simple piping also executes the first command and prints out the result after the pipe result
+* Multiple redirections does not work properly
 
 ## Wanted to implement but could not:
 * Redirection with `>>`, `<<`, `2>`, `2>>`, `&>`
