@@ -212,7 +212,7 @@ void run_shell(){
 
 }
 
-//Will exits on keyboard interrupt signal
+//Will exit on keyboard interrupt signal
 static void sighandler(int signo){
   if (signo == SIGINT){
     exit(0);
