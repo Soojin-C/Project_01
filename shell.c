@@ -57,6 +57,10 @@ void fork_launch(char ** args){
     chdir(args[1]);
   }
 
+  else if(strcmp(args[0], "exit") == 0){
+    exit(0);
+  }
+
   else{
     f = fork();
 
@@ -86,6 +90,10 @@ void fork_launch2(char ** args, int out, int in){
 
   if(strcmp(args[0], "cd") == 0){
     chdir(args[1]);
+  }
+
+  else if(strcmp(args[0], "exit") == 0){
+    exit(0);
   }
 
   else{
@@ -124,6 +132,7 @@ Returns: NONE
     * All other commands
 ===============================================*/
 void run_shell(){
+  signal(SIGINT, sighandler);
   char * line;
   int size;
   char * input = malloc (sizeof(char*) * 100);
@@ -168,9 +177,9 @@ void run_shell(){
       while(arg[0] == ' '){
         arg++;
       }
-      if(strcmp(cmds[0], "")){
-        return;
-      }
+      //if(strcmp(cmds[0], "")){
+      //  return;
+      //}
       int fd = open(arg, O_WRONLY | O_CREAT, 0666);
       int x = dup(0);
       dup2(fd, 0);
@@ -217,7 +226,9 @@ void run_shell(){
 //Will exit on keyboard interrupt signal
 static void sighandler(int signo){
   if (signo == SIGINT){
-    exit(0);
+    while(1){
+      exit(0);
+    }
   }
 }
 
@@ -229,6 +240,7 @@ While loop to keep shell running.
 =========================*/
 int main(){
 
+  signal(SIGINT, sighandler);
   while(1){
     run_shell(); //runnning shell
   }
