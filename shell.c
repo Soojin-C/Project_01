@@ -155,8 +155,7 @@ void run_shell(){
   //3. Forking and Launching SHELL
   int i = 0;
   while(arg){
-    if (strchr(arg, '>')) { //redirection for >
-      printf("%s\n", arg );
+    if (strchr(arg, '>') != NULL) { //redirection for >
       char * fnc = strsep(&arg, ">");
       char **cmds = parse_args(fnc, " ");
       while(arg[0] == ' '){
@@ -167,11 +166,10 @@ void run_shell(){
       dup2(fd, 1);
       fork_launch2(cmds, x, 0);
       arg = args[++i];
-      printf("%s\n", arg );
       close(fd);
       free(cmds);
     }
-    else if(strchr(arg, '<')){ //redirection for <
+    else if(strchr(arg, '<') != NULL){ //redirection for <
       char * fnc = strsep(&arg, "<");
       char **cmds = parse_args(fnc, " ");
       while(arg[0] == ' '){
@@ -188,28 +186,16 @@ void run_shell(){
       close(fd);
       free(cmds);
     }
-    else if(strchr(arg, '|')){ //simple piping
-      char * fnc = strsep(&arg, "|");
-      char ** cmds = parse_args(fnc, " ");
-      while(arg[0] == ' '){
-        arg++;
+    else if(strchr(arg, '|') != NULL){ //simple piping
+      char ** cmds = parse_args(arg, "|");
+      FILE * file1 = popen(cmds[0], "r");
+      FILE * file2 = popen(cmds[1], "w");
+      char inputpath[256];
+      while(fgets(inputpath, sizeof(inputpath), file1)){
+        fprintf(file2, "%s", inputpath);
       }
-      //Writing result of first command
-      int in = dup(STDIN_FILENO);
-      int out = dup(STDOUT_FILENO);
-      int file1 = open("Pipin", O_WRONLY);
-      dup2(file1, 1);
-      fork_launch(parse_args(fnc, " "));
-
-      //Putting into second command
-      int file2 = open("Pipin", O_RDONLY); //getting info from first command output
-      dup2(file2, 0);
-      close(file1);
-      dup2(out, 1);//setting stdout back to 1
-      fork_launch(parse_args(arg, " "));
-      dup2(in, 0); //setting stdin back to 0
-      close(file2);
-
+      pclose(file1);
+      pclose(file2);
     }
     else{ //all else
       char **cmds = parse_args(arg, " ");
